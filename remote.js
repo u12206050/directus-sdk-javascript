@@ -322,6 +322,10 @@ class RemoteInstance {
   getUser(id = requiredParam('id')) {
     return this._get(`users/${id}`);
   }
+  
+  getMe(id = requiredParam()) {
+    return this._get(`users/me`);
+  }
 
   createUser(user = requiredParam('user')) {
     return this._post('users', user);
