@@ -322,13 +322,26 @@ class RemoteInstance {
   getUser(id = requiredParam('id')) {
     return this._get(`users/${id}`);
   }
-  
+
   getMe() {
     return this._get(`users/me`);
   }
 
   createUser(user = requiredParam('user')) {
     return this._post('users', user);
+  }
+
+  updateUser(id = requiredParam('id'), data = requiredParam('data')) {
+    return this._put(`users/${id}`, data);
+  }
+
+  updateMe(data = requiredParam('data')) {
+    return this._put('users/me', data);
+  }
+
+  // WARNING: Updating user password doesn't check strength or length
+  updatePassword(password = requiredParam('password')) {
+    return this._put('users/me', {password: password});
   }
 
   // Hash
