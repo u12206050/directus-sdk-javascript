@@ -323,7 +323,7 @@ class RemoteInstance {
     return this._get(`users/${id}`);
   }
   
-  getMe(id = requiredParam()) {
+  getMe() {
     return this._get(`users/me`);
   }
 
