@@ -13,6 +13,9 @@ class RemoteInstance {
       throw new Error('No Directus URL provided');
     }
 
+    // TEMP FIX FOR BACKWARD COMPATIBILTY
+    url = url.replace('/api/1.1', '');
+
     this.base = url.replace(/\/+$/, '');
     this.api = this.base + '/api/';
     this.url = this.api + this.version + '/';
@@ -28,7 +31,7 @@ class RemoteInstance {
     return headers;
   }
 
-  _onCaughtError(err) {
+  _onCaughtError(resolve, reject, err) {
     if (err.response && err.response.data) {
       return reject(err.response.data);
     }
@@ -47,7 +50,7 @@ class RemoteInstance {
         paramsSerializer: params => qs.stringify(params, {arrayFormat: 'brackets'})
       })
         .then(res => resolve(res.data))
-        .catch(err => this._onCaughtError(err));
+        .catch(err => this._onCaughtError(resolve, reject, err));
     });
   }
 
@@ -58,7 +61,7 @@ class RemoteInstance {
     return new Promise((resolve, reject) => {
       axios.post(url + endpoint, data, {headers})
         .then(res => resolve(res.data))
-        .catch(err => this._onCaughtError(err));
+        .catch(err => this._onCaughtError(resolve, reject, err));
     });
   }
 
@@ -69,7 +72,7 @@ class RemoteInstance {
     return new Promise((resolve, reject) => {
       axios.put(url + endpoint, data, {headers})
         .then(res => resolve(res.data))
-        .catch(err => this._onCaughtError(err));
+        .catch(err => this._onCaughtError(resolve, reject, err));
     });
   }
 
@@ -80,7 +83,7 @@ class RemoteInstance {
     return new Promise((resolve, reject) => {
       axios.delete(url + endpoint, {headers, data})
         .then(res => resolve(res.data))
-        .catch(err => this._onCaughtError(err));
+        .catch(err => this._onCaughtError(resolve, reject, err));
     });
   }
 
