@@ -8,13 +8,13 @@ Directus SDK for JavaScript (Node and Browser)
 
 ## Installation
 
-Install the package using [npm](https://www.npmjs.com) or [Yarn](https://yarnpkg.com/):  
+Install the package using [npm](https://www.npmjs.com) or [Yarn](https://yarnpkg.com/):
 `npm install directus-sdk-javascript --production` or `yarn add directus-sdk-javascript`
 
-Or download the repo and include `/dist/remote.js` into your document:  
+Or download the repo and include `/dist/remote.js` into your document:
 `<script src="/dist/remote.js"></script>`
 
-Or use a service that distributes npm packages like [unpkg](https://unpkg.org):  
+Or use a service that distributes npm packages like [unpkg](https://unpkg.org):
 `<script src="https://unpkg.com/directus-sdk-javascript/dist/remote.js"></script>`
 
 
@@ -30,7 +30,8 @@ const RemoteInstance = require('directus-sdk-javascript/remote');
 import { RemoteInstance } from 'directus-sdk-javascript';
 
 const client = new RemoteInstance({
-  url: 'http://instance.directus.io/api/1.1/',
+  url: 'http://instance.directus.io/',
+  version: '1.1', // optional, only need to update if different from default
   accessToken: [user-token] // optional, can be used without on public routes
 });
 ```
@@ -39,6 +40,32 @@ The client provides methods for each API endpoint. Every endpoint returns a prom
 
 ```javascript
 client.getItems('projects')
+  .then(res => console.log(res))
+  .catch(err => console.log(err));
+```
+
+
+Get and update the current logged in user:
+
+```javascript
+client.getMe()
+  .then(res => console.log(res))
+  .catch(err => console.log(err));
+
+client.updateMe({first_name: 'John', last_name: 'Doe'})
+  .then(res => console.log(res))
+  .catch(err => console.log(err));
+```
+
+
+Custom api endpoints, implemented on the server under `customs/endpoints`, are also available. Here is an example for calling the `http://instance.directus.io/api/example` endpoint:
+
+```javascript
+client.getApi('example')
+  .then(res => console.log(res))
+  .catch(err => console.log(err));
+
+client.postApi('example', {custom_var: 'value'})
   .then(res => console.log(res))
   .catch(err => console.log(err));
 ```

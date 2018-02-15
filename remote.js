@@ -3,16 +3,19 @@ const qs = require('qs');
 
 class RemoteInstance {
   constructor(options) {
-    const {accessToken, url, headers} = options;
+    const {accessToken, url, version, headers} = options;
 
     this.accessToken = accessToken;
     this.headers = headers || {};
+    this.version = version || '1.1';
 
     if (!url) {
       throw new Error('No Directus URL provided');
     }
 
-    this.url = url;
+    this.base = url.replace(/\/+$/, '');
+    this.api = this.base + '/api/';
+    this.url = this.api + this.version + '/';
   }
 
   get _requestHeaders() {
@@ -25,71 +28,59 @@ class RemoteInstance {
     return headers;
   }
 
-  _get(endpoint, params = {}) {
+  _onCaughtError(err) {
+    if (err.response && err.response.data) {
+      return reject(err.response.data);
+    }
+
+    return reject(err);
+  }
+
+  _get(endpoint, params = {}, isAPI = false) {
     const headers = this._requestHeaders;
+    const url = isAPI ? this.api : this.url;
 
     return new Promise((resolve, reject) => {
-      axios.get(this.url + endpoint, {
+      axios.get(url + endpoint, {
         params,
         headers,
         paramsSerializer: params => qs.stringify(params, {arrayFormat: 'brackets'})
       })
         .then(res => resolve(res.data))
-        .catch(err => {
-          if (err.response && err.response.data) {
-            return reject(err.response.data);
-          }
-
-          return reject(err);
-        });
+        .catch(err => this._onCaughtError(err));
     });
   }
 
-  _post(endpoint, data = {}) {
+  _post(endpoint, data = {}, isAPI = false) {
     const headers = this._requestHeaders;
+    const url = isAPI ? this.api : this.url;
 
     return new Promise((resolve, reject) => {
-      axios.post(this.url + endpoint, data, {headers})
+      axios.post(url + endpoint, data, {headers})
         .then(res => resolve(res.data))
-        .catch(err => {
-          if (err.response && err.response.data) {
-            return reject(err.response.data);
-          }
-
-          return reject(err);
-        });
+        .catch(err => this._onCaughtError(err));
     });
   }
 
-  _put(endpoint, data = {}) {
+  _put(endpoint, data = {}, isAPI = false) {
     const headers = this._requestHeaders;
+    const url = isAPI ? this.api : this.url;
 
     return new Promise((resolve, reject) => {
-      axios.put(this.url + endpoint, data, {headers})
+      axios.put(url + endpoint, data, {headers})
         .then(res => resolve(res.data))
-        .catch(err => {
-          if (err.response && err.response.data) {
-            return reject(err.response.data);
-          }
-
-          return reject(err);
-        });
+        .catch(err => this._onCaughtError(err));
     });
   }
 
-  _delete(endpoint, data = {}) {
+  _delete(endpoint, data = {}, isAPI = false) {
     const headers = this._requestHeaders;
+    const url = isAPI ? this.api : this.url;
 
     return new Promise((resolve, reject) => {
-      axios.delete(this.url + endpoint, {headers, data})
+      axios.delete(url + endpoint, {headers, data})
         .then(res => resolve(res.data))
-        .catch(err => {
-          if (err.response && err.response.data) {
-            return reject(err.response.data);
-          }
-
-          return reject(err);
-        });
+        .catch(err => this._onCaughtError(err));
     });
   }
 
@@ -322,10 +313,6 @@ class RemoteInstance {
   getUser(id = requiredParam('id')) {
     return this._get(`users/${id}`);
   }
-  
-  getMe() {
-    return this._get(`users/me`);
-  }
 
   getMe() {
     return this._get(`users/me`);
@@ -346,6 +333,25 @@ class RemoteInstance {
   // WARNING: Updating user password doesn't check strength or length
   updatePassword(password = requiredParam('password')) {
     return this._put('users/me', {password: password});
+  }
+
+  // API Endpoints
+  // ----------------------------------------------------------------------------------
+
+  getApi(api_endpoint = requiredParam('api_endpoint'), params = {}) {
+    return this._get(api_endpoint, params, true);
+  }
+
+  postApi(api_endpoint = requiredParam('api_endpoint'), data = requiredParam('data')) {
+    return this._post(api_endpoint, data, true);
+  }
+
+  putApi(api_endpoint = requiredParam('api_endpoint'), data = requiredParam('data')) {
+    return this._put(api_endpoint, data, true);
+  }
+
+  deleteApi(api_endpoint = requiredParam('api_endpoint'), data = requiredParam('data')) {
+    return this._delete(api_endpoint, data, true);
   }
 
   // Hash
