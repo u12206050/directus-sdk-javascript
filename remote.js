@@ -14,9 +14,9 @@ class RemoteInstance {
     }
 
     // TEMP FIX FOR BACKWARD COMPATIBILTY
-    url = url.replace('/api/1.1', '');
+    let _url = url.replace('/api/1.1', '');
 
-    this.base = url.replace(/\/+$/, '');
+    this.base = _url.replace(/\/+$/, '');
     this.api = this.base + '/api/';
     this.url = this.api + this.version + '/';
   }
